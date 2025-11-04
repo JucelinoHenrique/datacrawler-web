@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import { getArticles, type Article } from "@/lib/articles";
 import { ArticleCard } from "../components/ArticleCard";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiPlayCircle, FiRefreshCw } from "react-icons/fi";
+import { runHackerNewsScraper } from "@/lib/scraper";
 
 export default function HomePage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scraping, setScraping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -21,6 +24,19 @@ export default function HomePage() {
       setArticles([]);
     } finally {
       setLoading(false);
+    }
+  }
+  async function scrapeNow() {
+    try {
+      setScraping(true);
+      setMessage(null);
+      await runHackerNewsScraper();
+      setMessage("Scraper executado com sucesso ✅");
+      await load();
+    } catch (e: any) {
+      setError(e?.message ?? "Erro ao executar scraper");
+    } finally {
+      setScraping(false);
     }
   }
 
@@ -44,14 +60,25 @@ export default function HomePage() {
               Últimas entradas coletadas pelos scrapers.
             </p>
           </div>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-          >
-            <FiRefreshCw className={loading ? "animate-spin" : ""} />
-            Atualizar
-          </button>
+           <div className="flex gap-2">
+            <button
+              onClick={scrapeNow}
+              disabled={scraping}
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-300"
+            >
+              <FiPlayCircle className={scraping ? "animate-spin" : ""} />
+              {scraping ? "Executando..." : "Rodar Scraper"}
+            </button>
+
+            <button
+              onClick={load}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              <FiRefreshCw className={loading ? "animate-spin" : ""} />
+              Atualizar
+            </button>
+          </div>
         </header>
 
         {/* estados */}

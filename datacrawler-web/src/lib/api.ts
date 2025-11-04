@@ -1,19 +1,28 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!BASE_URL) throw new Error("NEXT_PUBLIC_API_URL não definida");
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    // evita cache agressivo no dev
-    cache: "no-store",
+async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
-      ...(init?.headers || {}),
     },
+    ...options,
   });
+
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`GET ${path} falhou: ${res.status} ${res.statusText} ${body}`);
+    const text = await res.text();
+    throw new Error(`Erro ${res.status}: ${text}`);
   }
-  return res.json() as Promise<T>;
+
+  return res.json();
+}
+
+export async function apiGet<T>(endpoint: string): Promise<T> {
+  return request<T>(endpoint, { method: "GET" });
+}
+
+export async function apiPost<T>(endpoint: string, body?: any): Promise<T> {
+  return request<T>(endpoint, {
+    method: "POST",
+    body: body ? JSON.stringify(body) : undefined,
+  });
 }

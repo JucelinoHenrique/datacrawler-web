@@ -2,13 +2,14 @@ import { getDomain } from "../lib/url";
 import { FiExternalLink } from "react-icons/fi";
 
 type Props = {
-  title: String;
+  title: string;
   url: string;
   source?: string;
   createdAt?: string;
+  imageUrl?: string;
 };
 
-export function ArticleCard({ title, url, source, createdAt }: Props) {
+export function ArticleCard({ title, url, source, createdAt, imageUrl }: Props) {
   const domain = getDomain(url);
   const date =
     createdAt ? new Date(createdAt).toLocaleDateString("pt-BR") : null;
@@ -20,8 +21,11 @@ export function ArticleCard({ title, url, source, createdAt }: Props) {
       rel="noreferrer"
       className="group flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
     >
-      {/* área que simula a imagem */}
-      <div className="h-28 bg-gradient-to-br from-emerald-200 via-emerald-50 to-white group-hover:from-emerald-300" />
+      {imageUrl ? (
+        <img src={imageUrl} className="h-28 w-full object-cover" alt={title} />
+      ) : (
+        <div className="h-28 bg-gradient-to-br from-emerald-200 via-emerald-50 to-white" />
+      )}
 
       <div className="flex flex-1 flex-col gap-2 p-4">
         <p className="line-clamp-2 text-base font-semibold text-gray-900 group-hover:text-emerald-700">

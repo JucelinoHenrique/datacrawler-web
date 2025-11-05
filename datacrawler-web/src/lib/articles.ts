@@ -2,7 +2,7 @@ import { apiGet } from "./api";
 
 export type Article ={
     id: number;
-    title: String;
+    title: string;
     url: string;
     source: string;
     created_at?:string

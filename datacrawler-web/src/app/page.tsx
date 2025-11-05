@@ -5,6 +5,7 @@ import { getArticles, type Article } from "@/lib/articles";
 import { ArticleCard } from "../components/ArticleCard";
 import { FiPlayCircle, FiRefreshCw } from "react-icons/fi";
 import { runHackerNewsScraper } from "@/lib/scraper";
+import { FloatingMenu} from "@/components/FloatingMenu";
 
 export default function HomePage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -49,6 +50,7 @@ export default function HomePage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
         {/* topo */}
         <header className="flex flex-wrap items-center justify-between gap-3">
+      <FloatingMenu/>
           <div>
             <p className="text-sm font-medium uppercase tracking-tight text-emerald-700">
               DataCrawler Hub

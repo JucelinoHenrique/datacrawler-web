@@ -1,5 +1,5 @@
 import { getDomain } from "../lib/url";
-import { FiExternalLink } from "react-icons/fi";
+import { FiExternalLink, FiImage } from "react-icons/fi";
 
 type Props = {
   title: string;
@@ -24,7 +24,9 @@ export function ArticleCard({ title, url, source, createdAt, imageUrl }: Props) 
       {imageUrl ? (
         <img src={imageUrl} className="h-28 w-full object-cover" alt={title} />
       ) : (
-        <div className="h-28 bg-gradient-to-br from-emerald-200 via-emerald-50 to-white" />
+         <div className="flex h-28 items-center justify-center bg-emerald-50 text-emerald-500">
+          <FiImage className="h-7 w-7 opacity-70" />
+        </div>
       )}
 
       <div className="flex flex-1 flex-col gap-2 p-4">

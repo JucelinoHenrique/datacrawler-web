@@ -5,6 +5,7 @@ import { runNewsScraper } from "@/lib/scraper";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { ScraperFilter } from "../components/ScraperFilter";
 import { ArticleGrid } from "../components/ArticleGrid";
+import { FloatingMenu } from "@/components/FloatingMenu";
 
 const SCRAPER_OPTIONS = [
   { id: "hackernews", label: "Hacker News" },
@@ -56,6 +57,7 @@ export default function Page() {
         />
 
         <ArticleGrid articles={filtered} />
+        <FloatingMenu/>
       </div>
     </main>
   );

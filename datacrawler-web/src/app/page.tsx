@@ -1,119 +1,61 @@
-"use client";
-
+"use client"
 import { useEffect, useState } from "react";
-import { getArticles, type Article } from "@/lib/articles";
-import { ArticleCard } from "../components/ArticleCard";
-import { FiPlayCircle, FiRefreshCw } from "react-icons/fi";
-import { runHackerNewsScraper } from "@/lib/scraper";
-import { FloatingMenu} from "@/components/FloatingMenu";
+import { apiGet } from "@/lib/api";
+import { runNewsScraper } from "@/lib/scraper";
+import { DashboardHeader } from "../components/DashboardHeader";
+import { ScraperFilter } from "../components/ScraperFilter";
+import { ArticleGrid } from "../components/ArticleGrid";
 
-export default function HomePage() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [scraping, setScraping] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+const SCRAPER_OPTIONS = [
+  { id: "hackernews", label: "Hacker News" },
+  { id: "g1-tecnologia", label: "G1 Tecnologia" },
+  { id: "all", label: "Todos" },
+];
 
-  async function load() {
-    try {
-      setLoading(true);
-      const data = await getArticles(50);
-      setArticles(data);
-      setError(null);
-    } catch (e: any) {
-      setError(e?.message ?? "Erro ao buscar artigos");
-      setArticles([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-  async function scrapeNow() {
-    try {
-      setScraping(true);
-      setMessage(null);
-      await runHackerNewsScraper();
-      setMessage("Scraper executado com sucesso ✅");
-      await load();
-    } catch (e: any) {
-      setError(e?.message ?? "Erro ao executar scraper");
-    } finally {
-      setScraping(false);
-    }
+export default function Page() {
+  const [articles, setArticles] = useState<any[]>([]);
+  const [selectedScraper, setSelectedScraper] = useState("all");
+  const [loading, setLoading] = useState(false);
+
+  async function loadArticles() {
+    const data = await apiGet<any[]>("/articles?limit=50");
+    setArticles(data);
   }
 
   useEffect(() => {
-    load();
+    loadArticles();
   }, []);
+
+  async function handleRunScraper() {
+    setLoading(true);
+    await runNewsScraper(selectedScraper);
+    const articles = await apiGet<any[]>("/articles?limit=50");
+    setArticles(articles);
+    await loadArticles();
+    setLoading(false);
+  }
+
+  const filtered =
+    selectedScraper === "all"
+      ? articles
+      : articles.filter((a) => a.source === selectedScraper);
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
-        {/* topo */}
-        <header className="flex flex-wrap items-center justify-between gap-3">
-      <FloatingMenu/>
-          <div>
-            <p className="text-sm font-medium uppercase tracking-tight text-emerald-700">
-              DataCrawler Hub
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Ciência & Tecnologia
-            </h1>
-            <p className="text-sm text-slate-500">
-              Últimas entradas coletadas pelos scrapers.
-            </p>
-          </div>
-           <div className="flex gap-2">
-            <button
-              onClick={scrapeNow}
-              disabled={scraping}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-300"
-            >
-              <FiPlayCircle className={scraping ? "animate-spin" : ""} />
-              {scraping ? "Executando..." : "Rodar Scraper"}
-            </button>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6">
+        <DashboardHeader
+          onRun={handleRunScraper}
+          onRefresh={loadArticles}
+          loading={loading}
+        />
 
-            <button
-              onClick={load}
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              <FiRefreshCw className={loading ? "animate-spin" : ""} />
-              Atualizar
-            </button>
-          </div>
-        </header>
+        <ScraperFilter
+          options={SCRAPER_OPTIONS}
+          initial="all"
+          onChange={setSelectedScraper}
+        />
 
-        {/* estados */}
-        {loading && (
-          <p className="text-sm text-slate-500">Carregando artigos...</p>
-        )}
-
-        {error && !loading && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* grid principal */}
-        {!loading && !error && (
-          <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {articles.length === 0 ? (
-              <p className="text-sm text-slate-400">
-                Nenhum artigo encontrado. Rode o scraper no backend.
-              </p>
-            ) : (
-              articles.map((article) => (
-                <ArticleCard
-                  key={article.id}
-                  title={article.title}
-                  url={article.url}
-                  source={article.source}
-                  createdAt={article.created_at}
-                />
-              ))
-            )}
-          </section>
-        )}
+        <ArticleGrid articles={filtered} />
       </div>
     </main>
   );
